@@ -1,0 +1,111 @@
+version: "3.7"
+services: 
+  app_nextjs:
+    build: './nextjs'
+    image: app_project_demo_nextjs
+    container_name: app_project_demo_nextjs
+    restart: unless-stopped
+    networks:
+      - app_project_demo
+
+  nginx_nextjs_app:
+    build: ./server/nginx
+    container_name: app_project_demo_reverse_proxy_nextjs_app
+    ports:
+      - '81:81'
+    depends_on:
+      - app_nextjs
+    networks:
+      - app_project_demo
+
+  app_nuxt:
+    build: './nuxt'
+    image: app_project_demo_nuxt
+    container_name: app_project_demo_nuxt
+    # env_file:
+    #   - .env
+    restart: unless-stopped
+    # ports:
+    #  - '3150:3000'
+    #command: 'pm2 start ecosystem.config.js'
+    networks:
+      - app_project_demo
+
+  nginx_nuxt_app:
+    build: ./server/nginx
+    container_name: app_project_demo_reverse_proxy_nuxt_app
+    ports:
+      - '82:82'
+    depends_on:
+      - app_nuxt
+    networks:
+      - app_project_demo
+
+  service:
+    #build: './service'
+    build:
+      #args:
+        #port: ${SERVICE_PORT}
+        #db_host: ${DB_HOST}
+      context: ./service
+      dockerfile: Dockerfile
+    image: app_project_demo_nest
+    container_name: app_project_demo_nest
+    environment:
+      PORT: ${SERVICE_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
+    env_file:
+      - .env
+    restart: unless-stopped
+    # ports:
+    #  - '4150:4150'
+    networks:
+      - app_project_demo
+
+  nginx_service:
+    build: ./server/nginx
+    container_name: app_project_demo_reverse_proxy_service
+    ports:
+      - '4050:4050'
+    depends_on:
+      - service
+    networks:
+      - app_project_demo
+
+  db:
+    image: mysql:8.0
+    container_name: app_project_demo_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+    env_file:
+      - .env
+    # ports:
+    #   - '3306:3306'
+    volumes:
+      - ./database/sql:/docker-entrypoint-initdb.d
+    networks:
+      - app_project_demo
+
+  myadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: app_project_demo_phpmyadmin
+    ports:
+        - 8081:80
+    environment:
+        - PMA_ARBITRARY=0
+        - PMA_HOST=${DB_HOST}
+    restart: unless-stopped
+    depends_on:
+        - db
+    networks:
+      - app_project_demo
+
+networks:
+  app_project_demo:
+    driver: bridge

@@ -1,3 +1,4 @@
+import { RequestCookie } from 'next/dist/compiled/@edge-runtime/cookies'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -10,7 +11,7 @@ export async function middleware(request: NextRequest) {
   // request.cookies.has('nextjs') // => false
   // let token = request.cookies.get('refresh-token')?.value  
 
-  console.log(' >>>>>  [Middleware] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+  console.log('> Middleware ================================================================')
   console.log(request.nextUrl.pathname)
 //   console.log(allCookies)
   
@@ -24,7 +25,7 @@ if(request.cookies.has('refresh-token')) {
     _isAuth = await validateUser(allCookies)
 }
 
-console.log('^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^')
+console.log('====================================================================================ß')
 
 //   try {
     
@@ -77,7 +78,7 @@ export const config = {
   ],
 }
 
-const validateUser = async (cookies: Array<{}>) => {
+const validateUser = async (cookies: RequestCookie[]) => {
     let validate = false
     let _cookies: Array<string> = []
 
@@ -111,7 +112,7 @@ const validateUser = async (cookies: Array<{}>) => {
     }
 }
 
-const refreshToken = async (cookies: Array<{}>) => {
+const refreshToken = async (cookies: RequestCookie[]) => {
     let validate = false
     let _cookies: Array<string> = []
 
